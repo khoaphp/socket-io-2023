@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <base href="<%- params.domain %>">
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="https://code.jquery.com/jquery-3.6.3.min.js"></script>
+    <script src="socket.io/socket.io.js"></script>
+    <script>
+        var socket = io("<%- params.domain %>");
+
+        var socketReceiver = null;
+
+        socket.on("server-send-all-current_sockets", function(data){
+            $("#mySocketId").html("I'm " + socket.id);
+            $("#socketsList").html("");
+            data.arr.forEach(function(sock){
+                if(sock != socket.id){
+                    $("#socketsList").append(`<li class='friends'>`+sock+`</li>`);
+                }
+            });
+        });
+        
+        socket.on("server-send-to-all-clients", function(data){
+            console.log(data);
+            $("#chatList").append(`<li>`+ data.message +`</li>` );
+        });
+
+        $(document).on('click', '.friends', function(e) {
+            socketReceiver = $(this).html();
+            alert(socketReceiver);
+        });
+
+        $(document).ready(function(){
+            $("#send_to_server_1").click(function(){
+                var msg = $("#message").val();
+                socket.emit("client_send_to_server_1", {message:msg, receiver:socketReceiver});
+            });
+        });
+
+    </script>
+</head>
+<body>
+    <div id="mySocketId" style="color: red;"></div>
+    <input type="text" id="message" placeholder="..." /> 
+    <button id="send_to_server_1">Client send to server (1)</button>
+    <ul id="chatList"></ul>
+    <ul id="socketsList" style="background-color: aqua;"></ul>
+</body>
+</html>
